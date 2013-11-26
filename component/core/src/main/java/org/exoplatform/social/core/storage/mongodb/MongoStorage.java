@@ -2,7 +2,10 @@ package org.exoplatform.social.core.storage.mongodb;
 
 import java.lang.reflect.UndeclaredThrowableException;
 
+import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
+import com.mongodb.DBObject;
+import com.mongodb.Mongo;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoException;
 
@@ -68,6 +71,13 @@ public class MongoStorage implements Startable {
     try {
       MongoClient mongo = new MongoClient(host, port);
       this.db = mongo.getDB("social");
+      DB admin = mongo.getDB("admin");
+      
+      DBObject cmd = new BasicDBObject("shardCollection",new BasicDBObject()
+                                       .append("social.comment", new BasicDBObject("_id", "hashed")));
+      
+      System.err.println("============>MongoStorage: "+admin.command(cmd));;
+      
     } catch (MongoException e) {
       throw new UndeclaredThrowableException(e);
     } catch (Exception e) {

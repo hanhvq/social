@@ -192,6 +192,28 @@
     <key>org.exoplatform.social.core.storage.impl.RelationshipStorageImpl</key>
     <type>org.exoplatform.social.core.storage.synchronization.SynchronizedRelationshipStorage</type>
   </component>
+  
+  <component>
+    <key>org.exoplatform.social.core.storage.mongodb.ActivityMongoStorageImpl</key>
+    <type>org.exoplatform.social.core.storage.mongodb.ActivityMongoStorageImpl</type>
+  </component>
+  
+    <component>
+    <key>org.exoplatform.social.core.storage.mongodb.MongoStorage</key>
+    <type>org.exoplatform.social.core.storage.mongodb.MongoStorage</type>
+    <init-params>
+        <value-param>
+          <name>host</name>
+          <description>Host of MongoDB</description>
+          <value>localhost</value>
+        </value-param>
+        <value-param>
+          <name>port</name>
+          <description>Port of MongoDB</description>
+          <value>27018</value>
+        </value-param>
+    </init-params>
+  </component>
 
   <!--
     Space storage components.

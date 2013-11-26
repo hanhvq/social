@@ -26,6 +26,7 @@ import org.exoplatform.social.core.storage.query.PropertyLiteralExpression;
  */
 public class ActivityMongoEntity {
 
+  public static final PropertyLiteralExpression<String> id = new PropertyLiteralExpression<String>(String.class, "_id");
   public static final PropertyLiteralExpression<String> title = new PropertyLiteralExpression<String>(String.class, "title");
   public static final PropertyLiteralExpression<String> titleId = new PropertyLiteralExpression<String>(String.class, "titleId");
   public static final PropertyLiteralExpression<String> body = new PropertyLiteralExpression<String>(String.class, "body");
@@ -34,6 +35,5 @@ public class ActivityMongoEntity {
   public static final PropertyLiteralExpression<String[]> mentioners = new PropertyLiteralExpression<String[]>(String[].class, "mentioners");
   public static final PropertyLiteralExpression<String> appId = new PropertyLiteralExpression<String>(String.class, "appId");
   public static final PropertyLiteralExpression<String> externalId = new PropertyLiteralExpression<String>(String.class, "externalId");
-  
   
 }

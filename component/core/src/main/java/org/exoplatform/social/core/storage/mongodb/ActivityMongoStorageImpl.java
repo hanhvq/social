@@ -1,7 +1,5 @@
 package org.exoplatform.social.core.storage.mongodb;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -10,12 +8,10 @@ import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.jcr.InvalidItemStateException;
-import javax.jcr.ItemExistsException;
-
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.Validate;
-import org.chromattic.api.ChromatticException;
+import org.bson.types.BasicBSONList;
+import org.bson.types.ObjectId;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.social.core.ActivityProcessor;
@@ -24,15 +20,14 @@ import org.exoplatform.social.core.activity.filter.ActivityUpdateFilter;
 import org.exoplatform.social.core.activity.model.ActivityStream;
 import org.exoplatform.social.core.activity.model.ActivityStreamImpl;
 import org.exoplatform.social.core.activity.model.ExoSocialActivity;
+import org.exoplatform.social.core.activity.model.ExoSocialActivityImpl;
 import org.exoplatform.social.core.chromattic.entity.ActivityEntity;
-import org.exoplatform.social.core.chromattic.entity.ActivityListEntity;
-import org.exoplatform.social.core.chromattic.entity.HidableEntity;
 import org.exoplatform.social.core.chromattic.entity.IdentityEntity;
-import org.exoplatform.social.core.chromattic.entity.LockableEntity;
-import org.exoplatform.social.core.chromattic.utils.ActivityList;
 import org.exoplatform.social.core.identity.model.Identity;
 import org.exoplatform.social.core.identity.provider.OrganizationIdentityProvider;
 import org.exoplatform.social.core.identity.provider.SpaceIdentityProvider;
+import org.exoplatform.social.core.mongo.entity.ActivityMongoEntity;
+import org.exoplatform.social.core.mongo.entity.StreamItemMongoEntity;
 import org.exoplatform.social.core.service.LinkProvider;
 import org.exoplatform.social.core.space.model.Space;
 import org.exoplatform.social.core.storage.ActivityStorageException;
@@ -44,7 +39,12 @@ import org.exoplatform.social.core.storage.api.SpaceStorage;
 import org.exoplatform.social.core.storage.exception.NodeNotFoundException;
 import org.exoplatform.social.core.storage.impl.ActivityBuilderWhere;
 import org.exoplatform.social.core.storage.impl.StorageUtils;
-import org.exoplatform.social.core.storage.streams.StreamInvocationHelper;
+
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBCollection;
+import com.mongodb.DBObject;
+import com.mongodb.MongoException;
+import com.mongodb.WriteResult;
 
 public class ActivityMongoStorageImpl extends AbstractMongoStorage implements ActivityStorage {
   
@@ -112,7 +112,18 @@ public class ActivityMongoStorageImpl extends AbstractMongoStorage implements Ac
 
 	@Override
   public ExoSocialActivity getActivity(String activityId) throws ActivityStorageException {
-    return null;
+	  //
+    DBCollection collection = getCollection(ACTIVITY_COLLECTION_NAME);
+    BasicDBObject query = new BasicDBObject();
+    query.append("_id", new ObjectId(activityId));
+    
+    DBObject entity = collection.findOne(query);
+    
+    ExoSocialActivity activity = new ExoSocialActivityImpl();
+    
+    fillActivity(activity, entity);
+    
+    return activity;
   }
 
   @Override
@@ -155,44 +166,10 @@ public class ActivityMongoStorageImpl extends AbstractMongoStorage implements Ac
     } catch (IllegalArgumentException e) {
       throw new ActivityStorageException(ActivityStorageException.Type.ILLEGAL_ARGUMENTS, e.getMessage(), e);
     }
-
-    try {
-
-      if (activity.getId() == null) {
-
-        String[] mentioners = _createActivity(owner, activity);
-      }
-      else {
-        _saveActivity(activity);
-      }
-
-      StorageUtils.persist();
-
-      //
-      LOG.debug(String.format(
-          "Activity %s by %s (%s) saved",
-          activity.getTitle(),
-          activity.getUserId(),
-          activity.getId()
-      ));
-
-      //
-      return activity;
-
-    }
-    catch (NodeNotFoundException e) {
-      throw new ActivityStorageException(ActivityStorageException.Type.FAILED_TO_SAVE_ACTIVITY, e.getMessage(), e);
-    } catch (ChromatticException ex) {
-      Throwable throwable = ex.getCause();
-      if (throwable instanceof ItemExistsException || 
-          throwable instanceof InvalidItemStateException) {
-        LOG.warn("Probably was inserted activity by another session");
-        LOG.debug(ex.getMessage(), ex);
-        return activity;
-      } else {
-        throw new ActivityStorageException(ActivityStorageException.Type.FAILED_TO_SAVE_ACTIVITY, ex.getMessage());
-      }
-    }
+	  //
+	  _createActivity(owner, activity);
+	  
+    return activity;
 	}
 	
 	protected void _saveActivity(ExoSocialActivity activity) throws NodeNotFoundException {
@@ -210,42 +187,44 @@ public class ActivityMongoStorageImpl extends AbstractMongoStorage implements Ac
       //manageActivityLikes(addedLikes, removedLikes, activity);
     }
     //
-    fillActivityEntityFromActivity(activity, activityEntity);
+    //fillActivityEntityFromActivity(activity, activityEntity);
     
   }
 	
 	/*
    * Private
    */
-  private void fillActivityEntityFromActivity(ExoSocialActivity activity, ActivityEntity activityEntity) {
-
-    activityEntity.setTitle(activity.getTitle());
-    activityEntity.setTitleId(activity.getTitleId());
-    activityEntity.setBody(activity.getBody());
-    activityEntity.setBodyId(activity.getBodyId());
-    activityEntity.setLikes(activity.getLikeIdentityIds());
-    activityEntity.setType(activity.getType());
-    activityEntity.setAppId(activity.getAppId());
-    activityEntity.setExternalId(activity.getExternalId());
-    activityEntity.setUrl(activity.getUrl());
-    activityEntity.setPriority(activity.getPriority());
-    activityEntity.setLastUpdated(activity.getUpdated().getTime());
+  private void fillActivityEntityFromActivity(ExoSocialActivity activity, BasicDBObject activityEntity) {
     //
-    HidableEntity hidable = _getMixin(activityEntity, HidableEntity.class, true);
-    hidable.setHidden(activity.isHidden());
-    LockableEntity lockable = _getMixin(activityEntity, LockableEntity.class, true);
-    lockable.setLocked(activity.isLocked());
-    activityEntity.setMentioners(activity.getMentionedIds());
-    activityEntity.setCommenters(activity.getCommentedIds());
+    activityEntity.append(ActivityMongoEntity.title.getName(), activity.getTitle());
+    activityEntity.append(ActivityMongoEntity.titleId.getName(), activity.getTitleId());
+    activityEntity.append(ActivityMongoEntity.body.getName() ,activity.getBody());
+    activityEntity.append(ActivityMongoEntity.bodyId.getName(), activity.getBodyId());
+    activityEntity.append(ActivityMongoEntity.likers.getName(), activity.getLikeIdentityIds());
+    activityEntity.append(ActivityMongoEntity.mentioners.getName(), activity.getMentionedIds());
+    activityEntity.append(ActivityMongoEntity.appId.getName(), activity.getAppId());
+    activityEntity.append(ActivityMongoEntity.externalId.getName(), activity.getExternalId());
+  }
+  
+  /*
+   * Private
+   */
+  private void fillActivity(ExoSocialActivity activity, DBObject activityEntity) {
 
-    //
-    Map<String, String> params = activity.getTemplateParams();
-    if (params != null) {
-      activityEntity.putParams(params);
-    }
-
-    //
-    fillStream(activityEntity, activity);
+    activity.setId(activityEntity.get(ActivityMongoEntity.id.getName()).toString());
+    activity.setTitle(activityEntity.get(ActivityMongoEntity.title.getName()).toString());
+    activity.setTitleId(activityEntity.get(ActivityMongoEntity.titleId.getName()).toString());
+    activity.setBody(activityEntity.get(ActivityMongoEntity.body.getName()).toString());
+    activity.setBodyId(activityEntity.get(ActivityMongoEntity.bodyId.getName()).toString());
+    
+    BasicBSONList likers = (BasicBSONList) activityEntity.get(ActivityMongoEntity.likers.getName());
+    activity.setLikeIdentityIds(likers.toArray(new String[0]));
+    
+    BasicBSONList mentions = (BasicBSONList) activityEntity.get(ActivityMongoEntity.mentioners.getName());
+    activity.setMentionedIds(mentions.toArray(new String[0]));
+    
+    activity.setAppId(activityEntity.get(ActivityMongoEntity.appId.getName()).toString());
+    activity.setExternalId(activityEntity.get(ActivityMongoEntity.externalId.getName()).toString());
     
   }
   
@@ -294,54 +273,40 @@ public class ActivityMongoStorageImpl extends AbstractMongoStorage implements Ac
 	/*
    * Internal
    */
-  protected String[] _createActivity(Identity owner, ExoSocialActivity activity) throws NodeNotFoundException {
-
-    IdentityEntity identityEntity = _findById(IdentityEntity.class, owner.getId());
-
-    IdentityEntity posterIdentityEntity;
-    if (activity.getUserId() != null) {
-      posterIdentityEntity = _findById(IdentityEntity.class, activity.getUserId());
-    }
-    else {
-      posterIdentityEntity = identityEntity;
-    }
-
-    // Get ActivityList
-    ActivityListEntity activityListEntity = identityEntity.getActivityList();
-
+  protected String[] _createActivity(Identity owner, ExoSocialActivity activity) throws MongoException {
     //
-    Collection<ActivityEntity> entities = new ActivityList(activityListEntity);
-
-    // Create activity
-    long currentMillis = System.currentTimeMillis();
-    long activityMillis = (activity.getPostedTime() != null ? activity.getPostedTime() : currentMillis);
-    ActivityEntity activityEntity = activityListEntity.createActivity(String.valueOf(activityMillis));
-    entities.add(activityEntity);
-    activityEntity.setIdentity(identityEntity);
-    activityEntity.setComment(Boolean.FALSE);
-    activityEntity.setPostedTime(activityMillis);
-    activityEntity.setLastUpdated(activityMillis);
-    activityEntity.setPosterIdentity(posterIdentityEntity);
+    DBCollection collection = getCollection(ACTIVITY_COLLECTION_NAME);
     
-
-    // Fill activity model
-    activity.setId(activityEntity.getId());
-    activity.setStreamOwner(identityEntity.getRemoteId());
-    activity.setPostedTime(activityMillis);
-    activity.setReplyToId(new String[]{});
-    activity.setUpdated(activityMillis);
-    
-    //records activity for mention case.
-    
-    List<String> mentioners = new ArrayList<String>();
-    activity.setMentionedIds(processMentions(activity.getMentionedIds(), activity.getTitle(), mentioners, true));
-    
-    //
-    activity.setPosterId(activity.getUserId() != null ? activity.getUserId() : owner.getId());
-      
-    //
+    BasicDBObject activityEntity = new BasicDBObject();
     fillActivityEntityFromActivity(activity, activityEntity);
-    return mentioners.toArray(new String[0]);
+    //
+    collection.insert(activityEntity);
+    //set id back 
+    activity.setId(activityEntity.getString("_id") != null ? activityEntity.getString("_id") : null);
+    
+    //create StreamItem
+    //createStreamItemForConnections(owner, activity);
+    
+    return activity.getMentionedIds();
+  }
+  
+  private void createStreamItemForConnections(Identity owner, ExoSocialActivity activity) throws MongoException {
+    List<Identity> relationships = relationshipStorage.getConnections(owner);
+    
+    DBCollection collection = getCollection(ACTIVITY_COLLECTION_NAME);
+    
+    
+    //
+    collection.ensureIndex("");
+  }
+  
+  private void fillStreamItem(ExoSocialActivity activity, BasicDBObject streamItemEntity) {
+    //
+    streamItemEntity.append(StreamItemMongoEntity.activityId.getName(), activity.getId());
+    streamItemEntity.append(StreamItemMongoEntity.owner.getName(), "");
+    
+    
+    
   }
   
   /**
@@ -420,7 +385,13 @@ public class ActivityMongoStorageImpl extends AbstractMongoStorage implements Ac
 
   @Override
   public void deleteActivity(String activityId) throws ActivityStorageException {
-
+    //
+    DBCollection collection = getCollection(ACTIVITY_COLLECTION_NAME);
+    BasicDBObject query = new BasicDBObject();
+    query.append("_id", new ObjectId(activityId));
+    
+    WriteResult result = collection.remove(query);
+    LOG.warn("==========>DELETED: "+result);
   }
 
   @Override
@@ -679,7 +650,21 @@ public class ActivityMongoStorageImpl extends AbstractMongoStorage implements Ac
 	@Override
 	public void updateActivity(ExoSocialActivity existingActivity)
 			throws ActivityStorageException {
-		
+	  //
+    DBCollection collection = getCollection(ACTIVITY_COLLECTION_NAME);
+    
+    BasicDBObject update = new BasicDBObject();
+    
+    BasicDBObject set = new BasicDBObject();
+    //
+    fillActivityEntityFromActivity(existingActivity, set);
+    update.append("$set", set);
+    
+    BasicDBObject query = new BasicDBObject();
+    query.put(ActivityMongoEntity.id.getName(), new ObjectId(existingActivity.getId()));
+    
+    WriteResult result = collection.update(query, update);
+    LOG.warn("==============>UPDATED: "+result.toString());
 	}
 
 	@Override
