@@ -16,6 +16,8 @@
  */
 package org.exoplatform.social.core.mongo.entity;
 
+import org.exoplatform.social.core.storage.query.PropertyLiteralExpression;
+
 /**
  * Created by The eXo Platform SAS
  * Author : eXoPlatform
@@ -24,4 +26,18 @@ package org.exoplatform.social.core.mongo.entity;
  */
 public class ActivityRefMongoEntity {
 
+  public static final PropertyLiteralExpression<String> id = new PropertyLiteralExpression<String>(String.class, "_id");
+  public static final PropertyLiteralExpression<String> activityId = new PropertyLiteralExpression<String>(String.class, "activityId");
+  public static final PropertyLiteralExpression<String> owner = new PropertyLiteralExpression<String>(String.class, "owner");
+  public static final PropertyLiteralExpression<String> poster = new PropertyLiteralExpression<String>(String.class, "poster");
+  //LIKER, COMMENTER or MENTIONER
+  public static final PropertyLiteralExpression<String> viewerId = new PropertyLiteralExpression<String>(String.class, "viewerId");
+  //CONNECTION, LIKER, MENTIONER, COMMENTER
+  public static final PropertyLiteralExpression<String[]> viewerTypes = new PropertyLiteralExpression<String[]>(String[].class, "viewerTypes");
+  public static final PropertyLiteralExpression<Boolean> hiable = new PropertyLiteralExpression<Boolean>(Boolean.class, "hiable");
+  public static final PropertyLiteralExpression<Boolean> lockable = new PropertyLiteralExpression<Boolean>(Boolean.class, "lockable");
+  public static final PropertyLiteralExpression<Long> time = new PropertyLiteralExpression<Long>(Long.class, "time");
+  
+  public enum ViewerType { LIKER, CONNECTION, COMMENTER, POSTER, MENTIONER }
+  
 }

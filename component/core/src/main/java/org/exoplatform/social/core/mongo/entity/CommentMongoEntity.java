@@ -16,6 +16,8 @@
  */
 package org.exoplatform.social.core.mongo.entity;
 
+import org.exoplatform.social.core.storage.query.PropertyLiteralExpression;
+
 /**
  * Created by The eXo Platform SAS
  * Author : eXoPlatform
@@ -23,5 +25,25 @@ package org.exoplatform.social.core.mongo.entity;
  * Nov 21, 2013  
  */
 public class CommentMongoEntity {
+  
+  public static final PropertyLiteralExpression<String> id = new PropertyLiteralExpression<String>(String.class, "_id");
+  public static final PropertyLiteralExpression<String> title = new PropertyLiteralExpression<String>(String.class, "title");
+  public static final PropertyLiteralExpression<String> activityId = new PropertyLiteralExpression<String>(String.class, "activityId");
+  public static final PropertyLiteralExpression<String> titleId = new PropertyLiteralExpression<String>(String.class, "titleId");
+  public static final PropertyLiteralExpression<String> body = new PropertyLiteralExpression<String>(String.class, "body");
+  public static final PropertyLiteralExpression<String> bodyId = new PropertyLiteralExpression<String>(String.class, "bodyId");
+  public static final PropertyLiteralExpression<Long> postedTime = new PropertyLiteralExpression<Long>(Long.class, "postedTime");
+  public static final PropertyLiteralExpression<Long> lastUpdated = new PropertyLiteralExpression<Long>(Long.class, "lastUpdated");
+  public static final PropertyLiteralExpression<String> poster = new PropertyLiteralExpression<String>(String.class, "poster");
+  public static final PropertyLiteralExpression<String> owner = new PropertyLiteralExpression<String>(String.class, "owner");
+  public static final PropertyLiteralExpression<String[]> likers = new PropertyLiteralExpression<String[]>(String[].class, "likers");
+  public static final PropertyLiteralExpression<String[]> mentioners = new PropertyLiteralExpression<String[]>(String[].class, "mentioners");
+  public static final PropertyLiteralExpression<String> permaLink = new PropertyLiteralExpression<String>(String.class, "permaLink");
+  public static final PropertyLiteralExpression<Integer> priority = new PropertyLiteralExpression<Integer>(Integer.class, "priority");
+  public static final PropertyLiteralExpression<Boolean> hidable = new PropertyLiteralExpression<Boolean>(Boolean.class, "hidable");
+  public static final PropertyLiteralExpression<Boolean> lockable = new PropertyLiteralExpression<Boolean>(Boolean.class, "lockable");
+  public static final PropertyLiteralExpression<String> appId = new PropertyLiteralExpression<String>(String.class, "appId");
+  public static final PropertyLiteralExpression<String> externalId = new PropertyLiteralExpression<String>(String.class, "externalId");
+  public static final PropertyLiteralExpression<String> metadata = new PropertyLiteralExpression<String>(String.class, "metadata");
 
 }

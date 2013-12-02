@@ -46,6 +46,7 @@ import org.exoplatform.social.core.storage.cache.selector.ActivityOwnerCacheSele
 import org.exoplatform.social.core.storage.cache.selector.ScopeCacheSelector;
 import org.exoplatform.social.core.storage.impl.ActivityBuilderWhere;
 import org.exoplatform.social.core.storage.impl.ActivityStorageImpl;
+import org.exoplatform.social.core.storage.mongodb.ActivityMongoStorageImpl;
 
 /**
  * @author <a href="mailto:alain.defrance@exoplatform.com">Alain Defrance</a>
@@ -65,6 +66,8 @@ public class CachedActivityStorage implements ActivityStorage {
   private final FutureExoCache<ListActivitiesKey, ListActivitiesData, ServiceContext<ListActivitiesData>> activitiesCache;
 
   private final ActivityStorageImpl storage;
+  
+  private final ActivityMongoStorageImpl mongoStorage;
 
   public void clearCache() {
 
@@ -138,10 +141,11 @@ public class CachedActivityStorage implements ActivityStorage {
 
   }
 
-  public CachedActivityStorage(final ActivityStorageImpl storage, final SocialStorageCacheService cacheService) {
+  public CachedActivityStorage(final ActivityStorageImpl storage, final ActivityMongoStorageImpl mongoStorage, final SocialStorageCacheService cacheService) {
 
     //
     this.storage = storage;
+    this.mongoStorage = mongoStorage;
     this.storage.setStorage(this);
 
     //
@@ -169,7 +173,7 @@ public class CachedActivityStorage implements ActivityStorage {
         new ServiceContext<ActivityData>() {
           public ActivityData execute() {
             try {
-              ExoSocialActivity got = storage.getActivity(activityId);
+              ExoSocialActivity got = mongoStorage.getActivity(activityId);
               if (got != null) {
                 return new ActivityData(got);
               }
@@ -226,7 +230,7 @@ public class CachedActivityStorage implements ActivityStorage {
   public void saveComment(final ExoSocialActivity activity, final ExoSocialActivity comment) throws ActivityStorageException {
 
     //
-    storage.saveComment(activity, comment);
+    mongoStorage.saveComment(activity, comment);
 
     //
     exoActivityCache.put(new ActivityKey(comment.getId()), new ActivityData(getActivity(comment.getId())));
@@ -242,7 +246,7 @@ public class CachedActivityStorage implements ActivityStorage {
   public ExoSocialActivity saveActivity(final Identity owner, final ExoSocialActivity activity) throws ActivityStorageException {
 
     //
-    ExoSocialActivity a = storage.saveActivity(owner, activity);
+    ExoSocialActivity a = mongoStorage.saveActivity(owner, activity);
 
     //
     ActivityKey key = new ActivityKey(a.getId());
@@ -455,7 +459,7 @@ public class CachedActivityStorage implements ActivityStorage {
     ListActivitiesData keys = activitiesCache.get(
         new ServiceContext<ListActivitiesData>() {
           public ListActivitiesData execute() {
-            List<ExoSocialActivity> got = storage.getActivityFeed(ownerIdentity, offset, limit);
+            List<ExoSocialActivity> got = mongoStorage.getActivityFeed(ownerIdentity, offset, limit);
             return buildIds(got);
           }
         },
@@ -479,7 +483,7 @@ public class CachedActivityStorage implements ActivityStorage {
     return activitiesCountCache.get(
         new ServiceContext<IntegerData>() {
           public IntegerData execute() {
-            return new IntegerData(storage.getNumberOfActivitesOnActivityFeed(ownerIdentity));
+            return new IntegerData(mongoStorage.getNumberOfActivitesOnActivityFeed(ownerIdentity));
           }
         },
         key)
@@ -875,7 +879,7 @@ public class CachedActivityStorage implements ActivityStorage {
     ListActivitiesData keys = activitiesCache.get(
         new ServiceContext<ListActivitiesData>() {
           public ListActivitiesData execute() {
-            List<ExoSocialActivity> got = storage.getComments(existingActivity, offset, limit);
+            List<ExoSocialActivity> got = mongoStorage.getComments(existingActivity, offset, limit);
             return buildIds(got);
           }
         },
@@ -898,7 +902,7 @@ public class CachedActivityStorage implements ActivityStorage {
     return activitiesCountCache.get(
         new ServiceContext<IntegerData>() {
           public IntegerData execute() {
-            return new IntegerData(storage.getNumberOfComments(existingActivity));
+            return new IntegerData(mongoStorage.getNumberOfComments(existingActivity));
           }
         },
         key)

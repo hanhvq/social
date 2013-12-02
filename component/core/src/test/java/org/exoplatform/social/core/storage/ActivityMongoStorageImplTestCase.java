@@ -92,24 +92,24 @@ public class ActivityMongoStorageImplTestCase extends AbstractCoreTest {
     super.tearDown();
   }
   
-  public void testSaveActivity() {
-    
-    ExoSocialActivity activity = createActivity(0);
-    //
-    mongoStorage.saveActivity(demoIdentity, activity);
-    
-    assertNotNull(activity.getId());
-    
-    ExoSocialActivity rs = mongoStorage.getActivity(activity.getId());
-    
-    //
-    assertEquals("demo", rs.getLikeIdentityIds()[0]);
-    assertEquals("john", rs.getMentionedIds()[1]);
-    
-    //
-    tearDownActivityList.add(activity);
-    
-  }
+//  public void testSaveActivity() {
+//    
+//    ExoSocialActivity activity = createActivity(0);
+//    //
+//    mongoStorage.saveActivity(demoIdentity, activity);
+//    
+//    assertNotNull(activity.getId());
+//    
+//    ExoSocialActivity rs = mongoStorage.getActivity(activity.getId());
+//    
+//    //
+//    assertEquals("demo", rs.getLikeIdentityIds()[0]);
+//    assertEquals("john", rs.getMentionedIds()[1]);
+//    
+//    //
+//    tearDownActivityList.add(activity);
+//    
+//  }
   
   public void testUpdateActivity() {
     ExoSocialActivity activity = createActivity(1);
@@ -124,15 +124,28 @@ public class ActivityMongoStorageImplTestCase extends AbstractCoreTest {
     ExoSocialActivity res = mongoStorage.getActivity(activity.getId());
     
     assertEquals("Title after updated", res.getTitle());
+    
+    
+    List<ExoSocialActivity> list = mongoStorage.getActivityFeed(demoIdentity, 0, 10);
+    
+    System.out.println("========> FEED SIZE = "+ list.size());
+    
     //
-    tearDownActivityList.add(activity);
+    //tearDownActivityList.add(activity);
   }
   
-  public void testGetActivity() {
-    ExoSocialActivity activity = createActivity(1);
-    ExoSocialActivity activity2 = createActivity(2);
-    //
-    mongoStorage.saveActivity(demoIdentity, activity);
+//  public void testGetActivity() {
+//    ExoSocialActivity activity = createActivity(1);
+//    ExoSocialActivity activity2 = createActivity(2);
+//    //
+//    mongoStorage.saveActivity(demoIdentity, activity);
+//    
+//    
+//  }
+  
+  public void getActivitiesFeed() {
+    
+    
     
     
   }
