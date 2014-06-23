@@ -1078,10 +1078,6 @@ public class IdentityStorageImpl extends AbstractStorage implements IdentityStor
       offset = 0;
     }
 
-    String inputName = profileFilter.getName().replace(StorageUtils.ASTERISK_STR, StorageUtils.PERCENT_STR);
-    StorageUtils.processUsernameSearchPattern(inputName);
-    List<Identity> excludedIdentityList = profileFilter.getExcludedIdentityList();
-
     QueryBuilder<ProfileEntity> builder = getSession().createQueryBuilder(ProfileEntity.class);
     WhereExpression whereExpression = new WhereExpression();
 
@@ -1091,8 +1087,11 @@ public class IdentityStorageImpl extends AbstractStorage implements IdentityStor
         .and()
         .not().equals(ProfileEntity.deleted, "true");
 
-    StorageUtils.applyExcludes(whereExpression, excludedIdentityList);
-    StorageUtils.applyFilter(whereExpression, profileFilter);
+    if (profileFilter != null) {
+      List<Identity> excludedIdentityList = profileFilter.getExcludedIdentityList();
+      StorageUtils.applyExcludes(whereExpression, excludedIdentityList);
+      StorageUtils.applyFilter(whereExpression, profileFilter);
+    }
 
     builder.where(whereExpression.toString());
     applyOrder(builder, profileFilter);
@@ -1236,7 +1235,6 @@ public class IdentityStorageImpl extends AbstractStorage implements IdentityStor
   public List<Identity> getIdentitiesByFirstCharacterOfName(final String providerId, final ProfileFilter profileFilter,
       long offset, long limit, boolean forceLoadOrReloadProfile) throws IdentityStorageException {
 
-    List<Identity> excludedIdentityList = profileFilter.getExcludedIdentityList();
 
     //
     QueryBuilder<ProfileEntity> builder = getSession().createQueryBuilder(ProfileEntity.class);
@@ -1248,8 +1246,11 @@ public class IdentityStorageImpl extends AbstractStorage implements IdentityStor
         .and()
         .not().equals(ProfileEntity.deleted, "true");
 
-    StorageUtils.applyExcludes(whereExpression, excludedIdentityList);
-    StorageUtils.applyFilter(whereExpression, profileFilter);
+    if (profileFilter != null) {
+      List<Identity> excludedIdentityList = profileFilter.getExcludedIdentityList();
+      StorageUtils.applyExcludes(whereExpression, excludedIdentityList);
+      StorageUtils.applyFilter(whereExpression, profileFilter);
+    }
 
     builder.where(whereExpression.toString());
     applyOrder(builder, profileFilter);
@@ -1399,6 +1400,8 @@ public class IdentityStorageImpl extends AbstractStorage implements IdentityStor
   
   private void _applyUnifiedSearchFilter(WhereExpression whereExpression, ProfileFilter profileFilter) {
 
+    if (profileFilter == null) return;
+    
     String searchCondition = profileFilter.getAll();
 
     if (searchCondition != null && searchCondition.length() != 0) {

@@ -17,13 +17,13 @@
 
 package org.exoplatform.social.core.storage.api;
 
+import java.util.List;
+import java.util.Map;
+
 import org.exoplatform.social.core.identity.model.Identity;
 import org.exoplatform.social.core.profile.ProfileFilter;
 import org.exoplatform.social.core.relationship.model.Relationship;
 import org.exoplatform.social.core.storage.RelationshipStorageException;
-
-import java.util.List;
-import java.util.Map;
 
 /**
  * @author <a href="mailto:alain.defrance@exoplatform.com">Alain Defrance</a>
@@ -329,4 +329,23 @@ public interface RelationshipStorage {
                                                int maxConnectionsToLoad, 
                                                int maxSuggestions) throws RelationshipStorageException;
   
+  /**
+   * Gets a list of all relationships by status.
+   *
+   * @param identity The provided identity.
+   * @param type type of the relationship : ALL, PENDING or CONFIRMED.
+   * @param offset
+   * @param limit
+   * @return The list of relationships.
+   */
+  public List<Relationship> getRelationshipsByStatus(Identity identity, Relationship.Type type, long offset, long limit);
+  
+  /**
+   * Gets number of relationships by status.
+   *
+   * @param identity The provided identity.
+   * @param type type of the relationship : ALL, PENDING or CONFIRMED.
+   * @return The number of relationships.
+   */
+  public int getRelationshipsCountByStatus(Identity identity, Relationship.Type type);
 }

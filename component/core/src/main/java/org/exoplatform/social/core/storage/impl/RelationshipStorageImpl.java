@@ -17,7 +17,21 @@
 
 package org.exoplatform.social.core.storage.impl;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.NavigableMap;
+import java.util.Random;
+import java.util.Set;
+import java.util.TreeMap;
+
 import org.chromattic.api.query.Ordering;
+import org.chromattic.api.query.Query;
 import org.chromattic.api.query.QueryBuilder;
 import org.chromattic.api.query.QueryResult;
 import org.chromattic.core.query.QueryImpl;
@@ -47,19 +61,6 @@ import org.exoplatform.social.core.storage.exception.NodeNotFoundException;
 import org.exoplatform.social.core.storage.query.JCRProperties;
 import org.exoplatform.social.core.storage.query.WhereExpression;
 import org.exoplatform.social.core.storage.streams.StreamInvocationHelper;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.NavigableMap;
-import java.util.Random;
-import java.util.Set;
-import java.util.TreeMap;
 
 /**
  * @author <a href="mailto:alain.defrance@exoplatform.com">Alain Defrance</a>
@@ -647,10 +648,9 @@ public class RelationshipStorageImpl extends AbstractStorage implements Relation
         _createRelationship(relationship);
       }
       else {
+        _saveRelationship(relationship);
         //
         StorageUtils.persist();
-        
-        _saveRelationship(relationship);
       }
     }
     catch (NodeNotFoundException e) {
@@ -1225,5 +1225,65 @@ public class RelationshipStorageImpl extends AbstractStorage implements Relation
 
   public void setStorage(RelationshipStorage storage) {
     this.relationshipStorage = storage;
+  }
+  
+  private Query<RelationshipEntity> buildRelationshipQuery(String path, Relationship.Type type) {
+    QueryBuilder<RelationshipEntity> builder = getSession().createQueryBuilder(RelationshipEntity.class);
+
+    boolean hasAnd = false;
+    WhereExpression whereExpression = new WhereExpression();
+    if (path != null && path.length() > 0) {
+      whereExpression.like(JCRProperties.path, path + StorageUtils.SLASH_STR + StorageUtils.PERCENT_STR);
+      hasAnd = true;
+    }
+    if (hasAnd) {
+      whereExpression.and();
+    }
+    if (Relationship.Type.ALL.equals(type)) {
+      whereExpression.startGroup();
+      whereExpression.like(JCRProperties.status, Relationship.Type.CONFIRMED.name());
+      whereExpression.or();
+      whereExpression.like(JCRProperties.status, Relationship.Type.PENDING.name());
+      whereExpression.endGroup();
+    } else {
+      whereExpression.like(JCRProperties.status, type.name());
+    }
+
+    builder.where(whereExpression.toString());
+    builder.orderBy(RelationshipEntity.createdTime.getName(), Ordering.DESC);
+    
+    return builder.get();
+  }
+  
+  private String getPathFromIdentity(Identity identity) {
+    if (identity == null) return null;
+    try {
+      IdentityEntity identityEntity = _findById(IdentityEntity.class, identity.getId());
+      return identityEntity.getPath();
+    } catch (Exception e) {
+      return null;
+    }
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  public List<Relationship> getRelationshipsByStatus(Identity identity, Relationship.Type type, long offset, long limit) {
+    List<Relationship> relationships = new ArrayList<Relationship>();
+
+    QueryResult<RelationshipEntity> results = buildRelationshipQuery(getPathFromIdentity(identity), type).objects(offset, limit);
+
+    while (results.hasNext()) {
+      relationships.add(getStorage().getRelationship(results.next().getId()));
+    }
+
+    return relationships;
+  }
+  
+  /**
+   * {@inheritDoc}
+   */
+  public int getRelationshipsCountByStatus(Identity identity, Relationship.Type type) {
+    return buildRelationshipQuery(getPathFromIdentity(identity), type).objects().size();
   }
 }

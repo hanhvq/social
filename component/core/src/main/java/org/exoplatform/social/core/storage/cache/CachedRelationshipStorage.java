@@ -17,6 +17,12 @@
 
 package org.exoplatform.social.core.storage.cache;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+
 import org.exoplatform.container.PortalContainer;
 import org.exoplatform.services.cache.ExoCache;
 import org.exoplatform.services.log.ExoLogger;
@@ -44,12 +50,6 @@ import org.exoplatform.social.core.storage.cache.model.key.SuggestionKey;
 import org.exoplatform.social.core.storage.cache.selector.RelationshipCacheSelector;
 import org.exoplatform.social.core.storage.cache.selector.SuggestionCacheSelector;
 import org.exoplatform.social.core.storage.impl.RelationshipStorageImpl;
-
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 
 /**
  * Cache support for RelationshipStorage.
@@ -715,5 +715,12 @@ public class CachedRelationshipStorage implements RelationshipStorage {
     //
     return buildSuggestions(keys);
   }
+
+  public List<Relationship> getRelationshipsByStatus(Identity identity, Relationship.Type type, long offset, long limit) {
+    return storage.getRelationshipsByStatus(identity, type, offset, limit);
+  }
   
+  public int getRelationshipsCountByStatus(Identity identity, Relationship.Type type) {
+    return storage.getRelationshipsCountByStatus(identity, type);
+  }
 }
