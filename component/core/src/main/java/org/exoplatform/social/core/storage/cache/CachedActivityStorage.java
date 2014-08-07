@@ -1831,5 +1831,4 @@ public class CachedActivityStorage implements ActivityStorage {
   public List<ExoSocialActivity> getAllActivities(int index, int limit) {
     return storage.getAllActivities(index, limit);
   }
-  
 }
