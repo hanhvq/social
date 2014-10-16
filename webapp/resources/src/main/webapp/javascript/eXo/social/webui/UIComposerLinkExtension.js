@@ -80,10 +80,10 @@
 	        // if class contains ContentDescription -> update description
 	        oldEl.css('display',"block")
 	        if (oldEl.hasClass('title')) {
-	          UIComposerLinkExtension.linkData.title = $(editableEl).val();
+	          UIComposerLinkExtension.linkData.title = encodeURIComponent($(editableEl).val());
 	          UIComposerLinkExtension.changeLinkContent.apply(UIComposerLinkExtension);
 	        } else if (oldEl.hasClass('content')) {
-	          UIComposerLinkExtension.linkData.description = $(editableEl).val();
+	          UIComposerLinkExtension.linkData.description = encodeURIComponent($(editableEl).val());
 	          UIComposerLinkExtension.changeLinkContent.apply(UIComposerLinkExtension);
 	        }
 	        $(editableEl).remove();

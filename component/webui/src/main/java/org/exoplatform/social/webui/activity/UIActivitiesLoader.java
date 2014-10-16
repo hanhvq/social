@@ -16,6 +16,11 @@
  */
 package org.exoplatform.social.webui.activity;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Random;
+
 import org.exoplatform.commons.utils.ListAccess;
 import org.exoplatform.portal.webui.util.Util;
 import org.exoplatform.services.log.ExoLogger;
@@ -38,16 +43,10 @@ import org.exoplatform.webui.core.UIContainer;
 import org.exoplatform.webui.event.Event;
 import org.exoplatform.webui.event.EventListener;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Random;
-
 @ComponentConfig(
   template = "war:/groovy/social/webui/activity/UIActivitiesLoader.gtmpl",
   events = {
-    @EventConfig(listeners = UIActivitiesLoader.LoadMoreActionListener.class),
-    @EventConfig(listeners = UIActivitiesLoader.RefreshStreamActionListener.class)
+    @EventConfig(listeners = UIActivitiesLoader.LoadMoreActionListener.class)
   }
 )
 
@@ -162,7 +161,7 @@ public class UIActivitiesLoader extends UIContainer {
       currentLoadIndex = 0;
       isExtendLoader = false;
       
-      String activityId = Utils.getActivityID();
+      String activityId = getSingleActivityId();
       if (activityId != null && activityId.length() > 0) {
         postContext = PostContext.SINGLE;
       }
@@ -188,6 +187,16 @@ public class UIActivitiesLoader extends UIContainer {
     } catch (Exception e) {
       LOG.error(e.getMessage(), e);
     }
+  }
+  
+  private String getSingleActivityId() {
+    if ("activity".equals(Utils.getSelectedNode())) {
+      if (Utils.getValueFromRequestParam("id") != null) {
+        return Utils.getValueFromRequestParam("id");
+      }
+      return Utils.getValueFromRefererURI("id");
+    }
+    return null;
   }
 
   private void loadNext() throws Exception {
@@ -233,8 +242,8 @@ public class UIActivitiesLoader extends UIContainer {
   
   private List<ExoSocialActivity> loadActivity() throws Exception {
     ActivityManager activityManager = Utils.getActivityManager();
-    String activityId = Utils.getActivityID();
-    ExoSocialActivity activity = activityManager.getActivity(activityId);
+    String activityId = getSingleActivityId();
+    ExoSocialActivity activity = (activityId != null) ? activityManager.getActivity(activityId) : null;
     if (activity == null)
       return null;
     return new ArrayList<ExoSocialActivity>(Arrays.asList(activity));
@@ -277,15 +286,6 @@ public class UIActivitiesLoader extends UIContainer {
       require.addScripts("activitiesLoader.setStatus('" + uiActivitiesLoader.isHasMore() + "');");
       
       Utils.resizeHomePage();
-    }
-  }
-
-  public static class RefreshStreamActionListener extends EventListener<UIActivitiesLoader> {
-    public void execute(Event<UIActivitiesLoader> event) throws Exception {
-        UIActivitiesLoader uiActivities = event.getSource();
-        uiActivities.init();
-        event.getRequestContext().addUIComponentToUpdateByAjax(uiActivities);
-        Utils.resizeHomePage();
     }
   }
 }
