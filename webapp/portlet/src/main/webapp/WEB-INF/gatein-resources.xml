@@ -540,6 +540,9 @@
     <name>BasicProfilePortlet</name>
     <module>
       <depends>
+        <module>social-user-profile</module>
+      </depends>
+      <depends>
         <module>base</module>
       </depends>
     </module>
