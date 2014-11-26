@@ -25,11 +25,6 @@
             } else {
               $(Notification.parentId).find('div.form-horizontal:first').show();
             }
-            if(id !== 'checkBoxDeactivate') {
-              sUtils.feedbackMessageInline('userNotification', msgOk);
-            }
-          } else if(id !== 'checkBoxDeactivate') {
-            sUtils.feedbackMessageInline('userNotification', msgNOk);
           }
           if(jElm.is('button')) {
             jElm.addClass('disabled');
@@ -42,11 +37,9 @@
     onload : function() {
       Notification.formData = $(document.forms['uiNotificationSetting']).serialize();
       var parent = $(Notification.parentId);
-      var activeNotification = parent.find("input#checkBoxDeactivate"); 
       var save = parent.find("button#Save").addClass('disabled');
       var reset = parent.find("button#Reset");
       //
-      activeNotification.on('click', Notification.saveSetting) ;
       save.on('click', Notification.saveSetting) ;
       //
       reset.on('click', function(e) {
@@ -75,7 +68,34 @@
       var horizontal = parent.find('div.form-horizontal');
       horizontal.find('input[type=checkbox]').on('click', Notification.checkActiveButton);
       horizontal.find('select').on('change', Notification.checkActiveButton);
+      
+      //
+      var buttons = $("div.inputContainer");
+	  buttons.on('click', function(e) {
+		var input = $(this).find('input.providerAction');
+		Notification.switchStatus(input.attr('name'), input.hasClass("false"));
+	  });
     },
+    switchStatus : function(pluginId, isEnable) {
+      Notification.formData = $(document.forms['uiNotificationSetting']).serialize();
+      $(Notification.parentId).jzAjax({   
+	    url : "UserNotificationSetting.saveNotificationTypeSetting()",
+	    data : {
+	      "params" : Notification.formData,
+	      "pluginId" : pluginId,
+	      "enable" : isEnable
+	    },
+	    success : function(data) {
+	      var clazz = (data.isEnable === true) ? 'enable' : 'disable';
+	      var plugin = $("tr#" + data.pluginId);
+	      plugin.attr("class", clazz);
+	      var action = $('input[name=' + data.pluginId + ']')
+	      action.attr('class', 'providerAction yesno ' + clazz);
+	    }
+	  }).fail(function(jqXHR, textStatus) {
+	    alert("Request failed: " + textStatus + ". " + jqXHR);
+	  });
+	},
     checkActiveButton : function(e) {
       var newData = $(document.forms['uiNotificationSetting']).serialize();
       var parent = $(Notification.parentId);

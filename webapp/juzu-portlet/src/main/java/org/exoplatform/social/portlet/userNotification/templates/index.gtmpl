@@ -4,7 +4,10 @@
 #{param name=groups/}
 #{param name=hasActivePlugin/}
 #{param name=checkBoxs/}
+#{param name=intranetCheckBoxs/}
 #{param name=selectBoxs/}
+#{param name=enabledGetEmail/}
+#{param name=enabledGetIntranet/}
 
 <div id="userNotification" class="uiUserNotificationPortlet uiNotificationSettings">
 	<div class="UIPopupWindow UIDragObject uiPopup UISocialConfirmation" style="width: 550px; display: none;">
@@ -33,26 +36,43 @@
 			<h4>${_ctx.appRes("UINotification.msg.NoPluginIsActive")}</h4>
 		</div>
 		<%} else { %>		
-		<div>
-			<span class="uiCheckbox">
-				<input type="checkbox" ${checkbox} name="${checkboxId}" class="checkbox" id="${checkboxId}"/>
-				<span style="margin-left:10px">${_ctx.appRes("UINotification.label.DisableEmailNotifciation")}</span>
-			</span>
-		</div>
 		
 		<%
 			String display = "block";
-			if("checked".equals(checkbox)) {
-			  display = "none";
-			}
+			//if("checked".equals(checkbox)) {
+			//  display = "none";
+			//}
 		%>
 		<div class="form-horizontal" style="display:${display}">
 			<table class="uiGrid table table-striped">
 				<thead>
+				  <tr>
+				    <td></td>
+				    <td class="left">${_ctx.appRes("UINotification.label.GetEmailNotification")}</td>
+				    <td class="center">    
+		          <div class="inputContainer" style="width: 60px;">
+		        <% if (enabledGetEmail == true)  { %>                   
+		           <input type="checkbox" class="providerAction yesno ${enabledGetEmail}" checked="checked" name="EnableGetEmail">
+		        <% } else { %>
+		           <input type="checkbox" class="providerAction yesno ${enabledGetEmail}" name="EnableGetEmail">
+		        <% } %>
+		          </div>
+		        </td>
+            <td class="center">${_ctx.appRes("UINotification.label.GetIntranetNotification")}
+	            <div class="inputContainer" style="width: 60px;">
+	            <% if (enabledGetIntranet == true)  { %>                   
+	               <input type="checkbox" class="providerAction yesno ${enabledGetIntranet}" checked="checked" name="EnableGetIntranet">
+	            <% } else { %>
+	               <input type="checkbox" class="providerAction yesno ${enabledGetIntranet}" name="EnableGetIntranet">
+	            <% } %>
+	            </div>
+            </td>
+				  </tr>
 					<tr>
 						<th class="left">${_ctx.appRes("UINotification.label.NotificationsChose")}:</th>
 						<th width="200px" class="left">${_ctx.appRes("UINotification.label.SendMeAnEmailRightWay")}</th>
 						<th width="200px" class="left">${_ctx.appRes("UINotification.label.IncludeInMyDigestEmail")}</th>
+						<th width="200px" class="left">${_ctx.appRes("UINotification.label.SeeOnYourIntranet")}</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -86,6 +106,7 @@
 				            </td>
 				            <td></td>
 				            <td></td>
+				            <td></td>
 				          </tr>
 			          <%
 						  }
@@ -100,6 +121,9 @@
 						<td class="center">
 							${selectBoxs.get(pluginId)}
 						</td>
+						<td class="center">
+              ${intranetCheckBoxs.get(pluginId)}
+            </td>
 					</tr>
 			 	 <% } %>
 			 <% } %>
@@ -126,4 +150,22 @@
 		<%} %>			
 		</div>
 	</form>
+	
+	<script type="text/javascript">
+    require(["PORTLET/social-juzu/NotificationSettingsPortlet","SHARED/jquery", "SHARED/iphonePlugin"], function (notification, gj)
+    {
+      gj('input.providerAction').each(function()
+      {
+        gj(this).iphoneStyle({
+          checkedLabel:'YES',
+          uncheckedLabel:'NO'});
+
+        gj(this).change(function()
+        {
+          gj(this).trigger("click");
+        });
+      });
+    });
+  </script> 
+  
 </div>

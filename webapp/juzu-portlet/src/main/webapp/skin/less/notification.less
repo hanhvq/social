@@ -9,13 +9,18 @@
 	    transform: translate(-50%);
 	    margin-top: -10px;
 	}
-	.uiGrid.table {
-    tr {
-    	label {
-    		padding-left:20px;
-    	}
-    }
-	}
+	
+  .uiGrid.table {
+      tr.disable {
+        color: gray;
+      }
+      tr {
+        td.left label, td >label{
+          padding-left: 20px;
+        }
+      }
+  }
+  
 }
 .uiNotificationSettings .uiSocTitleBar{
 	margin-bottom: 10px;
