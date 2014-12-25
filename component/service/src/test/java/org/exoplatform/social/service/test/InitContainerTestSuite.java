@@ -26,6 +26,7 @@ import org.exoplatform.social.service.rest.RestCheckerTest;
 import org.exoplatform.social.service.rest.SecurityManagerTest;
 import org.exoplatform.social.service.rest.SpaceRestServiceTest;
 import org.exoplatform.social.service.rest.UtilTest;
+import org.exoplatform.social.service.rest.WebNotifRestServiceTest;
 import org.exoplatform.social.service.rest.api.ActivityResourcesTest;
 import org.exoplatform.social.service.rest.api.ActivityStreamResourcesTest;
 import org.exoplatform.social.service.rest.api.IdentityResourcesTest;
@@ -49,7 +50,8 @@ import org.junit.runners.Suite.SuiteClasses;
   PeopleRestServiceTest.class,
   RestCheckerTest.class,
   SecurityManagerTest.class,
-  UtilTest.class
+  UtilTest.class,
+  WebNotifRestServiceTest.class
   })
 @ConfigTestCase(AbstractServiceTest.class)
 public class InitContainerTestSuite extends BaseExoContainerTestSuite {

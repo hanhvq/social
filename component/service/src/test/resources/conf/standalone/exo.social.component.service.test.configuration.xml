@@ -51,10 +51,19 @@
   </component>
   
   <component>
+    <type>org.exoplatform.social.service.rest.WebNotifRestService</type>
+  </component>
+  
+  <component>
     <key>org.exoplatform.services.jcr.ext.app.SessionProviderService</key>
     <type>org.exoplatform.services.jcr.ext.app.ThreadLocalSessionProviderService</type>
   </component>
 
+  <component>
+    <key>org.exoplatform.commons.api.notification.service.WebNotificationService</key>
+    <type>org.exoplatform.commons.notification.impl.service.WebNotificationServiceImpl</type>
+  </component>
+  
   <component>
     <type>org.exoplatform.services.rest.impl.ProvidersRegistry</type>
   </component>

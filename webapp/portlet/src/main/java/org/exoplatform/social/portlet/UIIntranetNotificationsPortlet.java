@@ -23,7 +23,7 @@ import javax.portlet.MimeResponse;
 import javax.portlet.ResourceRequest;
 import javax.portlet.ResourceURL;
 
-import org.exoplatform.commons.api.notification.model.WebFilter;
+import org.exoplatform.commons.api.notification.model.WebNotificationFilter;
 import org.exoplatform.commons.api.notification.service.WebNotificationService;
 import org.exoplatform.portal.application.PortalRequestContext;
 import org.exoplatform.services.log.ExoLogger;
@@ -89,8 +89,8 @@ public class UIIntranetNotificationsPortlet extends UIPortletApplication {
       limit += ITEMS_LOADED_NUM;
       
       //
-      WebFilter filter = new WebFilter(currentUser, offset, limit);
-      List<String> moreNotifications = webNotifService.getNotificationContents(filter);
+      WebNotificationFilter filter = new WebNotificationFilter(currentUser, false);
+      List<String> moreNotifications = webNotifService.getNotificationContents(filter, offset, limit);
       hasMore = (moreNotifications.size() > ITEMS_PER_PAGE);
       
       StringBuffer sb = new StringBuffer();
@@ -125,8 +125,8 @@ public class UIIntranetNotificationsPortlet extends UIPortletApplication {
   protected List<String> getNotifications() throws Exception {
     offset = 0;
     limit = ITEMS_LOADED_NUM;
-    WebFilter filter = new WebFilter(currentUser, offset, limit);
-    List<String> notificationContents = webNotifService.getNotificationContents(filter);
+    WebNotificationFilter filter = new WebNotificationFilter(currentUser, false);
+    List<String> notificationContents = webNotifService.getNotificationContents(filter, offset, limit);
     hasMore = (notificationContents.size() > ITEMS_PER_PAGE);
     return notificationContents;
   }
