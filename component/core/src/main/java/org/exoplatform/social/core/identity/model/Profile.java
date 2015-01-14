@@ -86,6 +86,8 @@ public class Profile {
   /** DESCRIPTION OF EXPERIENCE. */
   public static final String        EXPERIENCES_DESCRIPTION = "description";
 
+  public static final String        ABOUT_ME = "aboutMe";
+  
   /** POSITION. */
   public static final String        POSITION       = "position";
 

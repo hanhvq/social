@@ -31,8 +31,7 @@ import juzu.Resource;
 import juzu.Response;
 import juzu.View;
 import juzu.impl.common.JSON;
-import juzu.request.ApplicationContext;
-import juzu.request.UserContext;
+import juzu.impl.request.Request;
 import juzu.template.Template;
 
 import org.exoplatform.commons.api.notification.model.GroupProvider;
@@ -85,18 +84,21 @@ public class UserNotificationSetting {
   private Locale locale = Locale.ENGLISH;
 
   @View
-  public Response index(ApplicationContext applicationContext, UserContext userContext) {
+  public void index(Request request) {
     //Redirect to the home's page if the feature is off
     if(CommonsUtils.isFeatureActive(NotificationUtils.FEATURE_NAME) == false) {
-      return redirectToHomePage();
+      redirectToHomePage();
+      return;
     }
-
+    
+    if (request != null) {
+      locale = request.getUserContext().getLocale();
+    }
     if (bundle == null) {
-      locale = userContext.getLocale();
-      bundle = applicationContext.resolveBundle(locale);
+      bundle = request.getApplicationContext().resolveBundle(locale);
     }
 
-    return index.ok(parameters());
+    index.with(parameters()).ok();
   }
  
   
@@ -253,7 +255,7 @@ public class UserNotificationSetting {
     return datas;
   }
   
-  private Response.Redirect redirectToHomePage() {
+  private void redirectToHomePage() {
     PortalRequestContext portalRequestContext = Util.getPortalRequestContext();
     HttpServletRequest currentServletRequest = portalRequestContext.getRequest();
     StringBuilder sb = new StringBuilder();
@@ -267,7 +269,6 @@ public class UserNotificationSetting {
     JavascriptManager jsManager = ctx.getJavascriptManager();
     jsManager.addJavascript("try { window.location.href='" + sb.toString() + "' } catch(e) {" +
             "window.location.href('" + sb.toString() + "') }");
-    return Response.redirect(sb.toString());
   }
 
   public class Context {

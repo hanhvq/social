@@ -49,7 +49,7 @@ public class Controller {
   static private final String ALL_SPACE_LINK = "all-spaces";
   
   @View
-  public Response index() throws Exception {
+  public void index() throws Exception {
     PortalRequestContext pcontext = (PortalRequestContext)(WebuiRequestContext.getCurrentInstance());
     Object statusObject = pcontext.getRequest().getSession().getAttribute(SpaceAccessType.ACCESSED_TYPE_KEY);
     Object spacePrettyNameObj = pcontext.getRequest().getSession().getAttribute(SpaceAccessType.ACCESSED_SPACE_PRETTY_NAME_KEY);
@@ -62,7 +62,8 @@ public class Controller {
       parameters.put("spaceDisplayName", "");
       parameters.put("spacePrettyName", "");
       parameters.put("redirectURI", statusObject != null ? Utils.getURI(ALL_SPACE_LINK) : "");
-      return message.with(parameters).ok();
+      message.with(parameters).ok();
+      return;
       
     } 
     
@@ -76,9 +77,9 @@ public class Controller {
     if ("social.space.access.not-access-wiki-space".equals(status)) {
       
       Object wikiPageObj = pcontext.getRequest().getSession().getAttribute(SpaceAccessType.ACCESSED_SPACE_WIKI_PAGE_KEY);
-      String redirectURL = getPermanWikiLink(spacePrettyName, wikiPageObj.toString());
-      pcontext.sendRedirect(redirectURL);
-      return Response.redirect(redirectURL);
+
+      pcontext.sendRedirect(getPermanWikiLink(spacePrettyName, wikiPageObj.toString()));
+      return;
     } 
     
     //
@@ -86,7 +87,7 @@ public class Controller {
     parameters.put("spaceDisplayName", spaceDisplayName);
     parameters.put("spacePrettyName", spacePrettyName);
     parameters.put("redirectURI", "");
-    return message.with(parameters).ok();
+    message.with(parameters).ok();
   }
   
   @Action
@@ -129,7 +130,8 @@ public class Controller {
    * This method is fake to build permanent wiki link.
    * After Permanent Link feature will be finished by ECMS team, 
    * this method will be removed instead of Wiki API.
-   *
+   * 
+   * @param pcontext
    * @return
    */
   private String getPermanWikiLink(String spacePrettyName, String wikiPage) {

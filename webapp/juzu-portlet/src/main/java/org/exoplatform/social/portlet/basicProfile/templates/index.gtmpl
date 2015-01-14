@@ -1,0 +1,53 @@
+#{param name=_ctx/}
+#{param name=profile/}
+
+<%
+import org.exoplatform.social.portlet.userprofile.helpers.UserProfileHelper;
+def keys = profile.keySet();
+%>
+<div class="uiSocApplication uiBasicProfilePortlet" id="UIBasicProfilePortlet">
+	<h5 class="head-container">&{UIBasicProfile.label.ContactInformation}</h5>
+	<div class="uiBasicInfoSection">
+  	<%
+  		for(key in keys) {
+  		  def values = profile.get(key);
+  		  String label = _ctx.appRes("UIBasicProfile.label." + key);
+  	%>
+    <div class="group-user-info">
+      <div class="label-user-info"><strong><%=label%>:</strong></div>
+      <div class="value-user-info">
+      <%
+      	if(UserProfileHelper.isString(values)) {
+      %>
+      	<div class=""><%=values%></div>
+      <%
+      	} else  {
+      	  for(subKey in values.keySet()) {
+      	    def listVal = values.get(subKey); 
+      	    int valueNum = 0;
+      	    if (UserProfileHelper.isURL(subKey)) {
+      	      for (url in listVal) { %>
+              <div class=""><a href="<%=url%>"><%=url%></a></div>
+            <%}
+      	    } else {
+              for (val in listVal) { 
+                if (valueNum == 0) {
+                  String typeLabel = _ctx.appRes("UIBasicProfile.label." + subKey);
+              %>
+      	      <div class=""><span><%=typeLabel%></span>: <span><%=val%></span></div>
+      	      <%} else { %>
+      	      <div class=""><span><%=val%></span></div>
+            <%  }
+                valueNum++;
+              }
+      	    }
+      	  }
+      	}
+      %>
+      </div>
+    </div>
+   	<%} %>
+  <div class="line-bottom"><span></span></div>
+  </div>
+</div>
+
