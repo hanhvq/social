@@ -1835,7 +1835,6 @@ public class CachedActivityStorage implements ActivityStorage {
   @Override
   public void setInjectStreams(boolean mustInject) {
     storage.setInjectStreams(mustInject);
-    
   }
 
   @Override
